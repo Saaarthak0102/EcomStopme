@@ -68,16 +68,6 @@ export function Footer() {
             <p className="text-sm font-medium text-[var(--color-text-muted)]">
               &copy; {new Date().getFullYear()} Stopme Photography. All rights reserved.
             </p>
-            <span className="hidden sm:inline text-black/20 text-sm">|</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-[var(--color-text-muted)]">Powered by</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/tattvalogo.svg"
-                alt="Tattva"
-                className="h-6 sm:h-7 w-auto object-contain"
-              />
-            </div>
           </div>
           <div className="flex gap-6">
             <a href="/privacy-policy" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">

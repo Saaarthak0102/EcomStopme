@@ -5,11 +5,7 @@ export type Product = {
   basePrice: number;
   images: string[];
   requiresPhoto: boolean;
-  variants?: {
-    size?: string[];
-    material?: string[];
-    frameColor?: string[];
-  };
+  variants?: Record<string, string[]>;
   maxEngravingLength?: number;
 };
 
