@@ -1,0 +1,102 @@
+import { Product } from "../types";
+
+export const products: Product[] = [
+  {
+    slug: "classic-photo-mug",
+    name: "Classic Photo Mug",
+    category: "gifts",
+    basePrice: 399,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Mug+Mockup"],
+    requiresPhoto: true,
+    variants: {
+      color: ["White", "Black Inner", "Magic (Color Changing)"],
+    },
+    maxEngravingLength: 20,
+  },
+  {
+    slug: "canvas-print-8x10",
+    name: "Canvas Print (8x10)",
+    category: "home-decor",
+    basePrice: 899,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Canvas+Mockup"],
+    requiresPhoto: true,
+    variants: {
+      size: ["8x10", "11x14", "16x20"],
+      frameColor: ["No Frame", "Black", "Wood"],
+    },
+  },
+  {
+    slug: "retro-photo-prints",
+    name: "Retro Photo Prints (Set of 24)",
+    category: "prints",
+    basePrice: 499,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Retro+Prints"],
+    requiresPhoto: true,
+  },
+  {
+    slug: "custom-keychain",
+    name: "Custom Photo Keychain",
+    category: "accessories",
+    basePrice: 249,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Keychain"],
+    requiresPhoto: true,
+    variants: {
+      material: ["Acrylic", "Metal"],
+    },
+  },
+  {
+    slug: "stopme-sticker-pack",
+    name: "Stopme Logo Sticker Pack",
+    category: "accessories",
+    basePrice: 149,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Stickers"],
+    requiresPhoto: false,
+  },
+  {
+    slug: "acrylic-photo-block",
+    name: "Acrylic Photo Block",
+    category: "home-decor",
+    basePrice: 749,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Acrylic+Block"],
+    requiresPhoto: true,
+  },
+  {
+    slug: "leather-wallet",
+    name: "Premium Leather Wallet",
+    category: "gifts",
+    basePrice: 1299,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Wallet"],
+    requiresPhoto: false,
+    variants: {
+      color: ["Brown", "Black"],
+    },
+    maxEngravingLength: 15,
+  },
+  {
+    slug: "photo-puzzle",
+    name: "Custom Photo Puzzle",
+    category: "gifts",
+    basePrice: 599,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Puzzle"],
+    requiresPhoto: true,
+    variants: {
+      pieces: ["100", "500", "1000"],
+    },
+  },
+  {
+    slug: "birthday-banner",
+    name: "Happy Birthday Banner",
+    category: "gifts",
+    basePrice: 349,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Banner"],
+    requiresPhoto: false,
+  },
+  {
+    slug: "desk-calendar",
+    name: "Personalized Desk Calendar",
+    category: "home-decor",
+    basePrice: 449,
+    images: ["https://placehold.co/600x600/fcf9f8/1b1c1c?text=Calendar"],
+    requiresPhoto: true,
+  },
+];
