@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stopme Store
 
-## Getting Started
+Welcome to the Stopme e-commerce application! This platform allows users to browse premium personalized photo gifts, customize their items in our interactive studio, and securely checkout.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The Stopme Store is designed with a premium, warm aesthetic and features an engaging user experience with smooth interactions, glassmorphism elements, and a mobile-optimized layout.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Application Pages
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Here is a quick breakdown of all the pages available in the application:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* **Home (`/`)**: The main landing page featuring our hero section, a showcase of trending products, and quick access to start creating.
+* **Shop (`/shop`)**: The full catalog displaying all our customizable products, complete with mobile-friendly category chips and desktop navigation rails.
+* **Category View (`/shop/[category]`)**: Filtered views of the shop tailored to specific product categories (e.g., Gifts, Home Decor).
+* **Personalization Studio (`/product/[slug]`)**: The core interactive product page where users can upload photos, select variants (like size or color), and preview their custom creations before adding them to the cart.
+* **Cart (`/cart`)**: A detailed view of the user's shopping cart, also accessible globally via the slide-out Cart Drawer and mobile Sticky Cart Bar.
+* **Checkout (`/checkout`)**: A streamlined, single-page checkout flow for providing delivery details and payment methods.
+* **Order Confirmation (`/checkout/success`)**: A success page confirming the order has been placed successfully.
+* **My Account (`/account`)**: A dashboard giving users quick access to their personal store data.
+* **Orders (`/account/orders`)**: A list of past and current orders.
+* **Order Details (`/account/orders/[id]`)**: Specific order tracking and status updates.
+* **Saved Addresses (`/account/addresses`)**: A quick view of saved delivery addresses.
 
-## Learn More
+## Running Locally
 
-To learn more about Next.js, take a look at the following resources:
+To run the application on your own machine:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Install the dependencies:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Open [http://localhost:3000](http://localhost:3000) in your web browser.
