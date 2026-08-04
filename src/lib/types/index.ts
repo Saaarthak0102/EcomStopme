@@ -26,7 +26,23 @@ export type CartItem = {
 export type Address = {
   id: string;
   label: string;
-  fullAddress: string;
+  fullName: string;
+  mobileNumber: string;
+  pinCode: string;
+  flatHouse: string;
+  areaStreet: string;
+  landmark?: string;
+  city: string;
+  state: string;
+  isDefault?: boolean;
+};
+
+export type PaymentMethod = {
+  id: string;
+  type: "card" | "upi";
+  last4?: string;
+  expiry?: string;
+  upiId?: string;
   isDefault?: boolean;
 };
 

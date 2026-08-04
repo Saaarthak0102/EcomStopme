@@ -3,25 +3,30 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Plus, Edit2, Trash2 } from "lucide-react";
+import { useAccountStore } from "@/lib/store/accountStore";
+import { Modal } from "@/components/ui/Modal";
+import { AddressForm } from "@/components/account/AddressForm";
+import { Address } from "@/lib/types";
 
 export default function AddressesPage() {
-  const [addresses, setAddresses] = useState([
-    { id: 1, label: "Home", text: "123 Main St, Apartment 4B\nMumbai, Maharashtra 400001\nIndia" },
-    { id: 2, label: "Office", text: "WeWork BKC, 5th Floor\nMumbai, Maharashtra 400051\nIndia" },
-  ]);
+  const { addresses, removeAddress } = useAccountStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | undefined>();
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this address?")) {
-      setAddresses(addresses.filter(a => a.id !== id));
+      removeAddress(id);
     }
   };
 
   const handleAdd = () => {
-    alert("This would open an 'Add Address' form modal.");
+    setEditingAddress(undefined);
+    setIsModalOpen(true);
   };
 
-  const handleEdit = () => {
-    alert("This would open an 'Edit Address' form modal.");
+  const handleEdit = (addr: Address) => {
+    setEditingAddress(addr);
+    setIsModalOpen(true);
   };
 
   return (
@@ -40,17 +45,32 @@ export default function AddressesPage() {
           {addresses.map(addr => (
             <Card key={addr.id} className="p-6 relative group">
               <div className="absolute top-4 right-4 flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                <button onClick={handleEdit} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"><Edit2 className="h-4 w-4" /></button>
+                <button onClick={() => handleEdit(addr)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"><Edit2 className="h-4 w-4" /></button>
                 <button onClick={() => handleDelete(addr.id)} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"><Trash2 className="h-4 w-4" /></button>
               </div>
-              <h3 className="font-bold mb-2">{addr.label}</h3>
-              <p className="whitespace-pre-line text-sm text-[var(--color-text-muted)] leading-relaxed">
-                {addr.text}
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-bold">{addr.fullName}</h3>
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-gray-100 rounded-full font-bold">{addr.label}</span>
+                {addr.isDefault && <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full font-bold">Default</span>}
+              </div>
+              <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+                {addr.flatHouse}, {addr.areaStreet}<br />
+                {addr.landmark ? `${addr.landmark}\n` : ""}
+                {addr.city}, {addr.state} {addr.pinCode}<br />
+                Phone number: {addr.mobileNumber}
               </p>
             </Card>
           ))}
         </div>
       )}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingAddress ? "Edit address" : "Add a new address"}>
+        <AddressForm 
+          existingAddress={editingAddress}
+          onSuccess={() => setIsModalOpen(false)} 
+          onCancel={() => setIsModalOpen(false)} 
+        />
+      </Modal>
     </div>
   );
 }
