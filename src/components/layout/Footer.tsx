@@ -2,9 +2,9 @@
 
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-surface-dim)] border-t border-black/5 pt-16 pb-24 lg:pb-12 mt-auto">
+    <footer className="bg-[var(--color-surface-dim)] border-t border-black/5 pt-8 pb-16 lg:pb-8 mt-auto">
       <div className="max-w-[1200px] mx-auto px-6">
-        <div className="mb-16">
+        <div className="mb-8">
           <span className="font-serif text-3xl font-bold text-[var(--color-primary)] italic">Stopme</span>
           <p className="font-sans text-sm text-[var(--color-text-muted)] mt-4 leading-relaxed max-w-sm">
             Preserving life's most intimate milestones with timeless grace. We combine high-end technology with artistic vision.
