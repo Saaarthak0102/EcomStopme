@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Package, MapPin, CreditCard, LogOut } from "lucide-react";
+import { Package, MapPin, CreditCard, LogOut, User } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 export default function AccountPage() {
   const menu = [
+    { icon: User, label: "Account Details", href: "/account/details" },
     { icon: Package, label: "Orders", href: "/account/orders" },
     { icon: MapPin, label: "Addresses", href: "/account/addresses" },
-    { icon: CreditCard, label: "Payment Methods", href: "/account" },
+    { icon: CreditCard, label: "Payment Methods", href: "/account/payment-methods" },
     { icon: LogOut, label: "Log Out", href: "/" },
   ];
 

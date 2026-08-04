@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Grid, Search, ShoppingBag, User } from "lucide-react";
+import { Grid, ShoppingBag, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -16,9 +16,7 @@ export function BottomNav() {
   if (isDesktop) return null;
 
   const tabs = [
-    { icon: Home, label: "Home", href: "/" },
     { icon: Grid, label: "Shop", href: "/shop" },
-    { icon: Search, label: "Search", href: "/search" },
     { icon: ShoppingBag, label: "Cart", href: "/cart", badge: cartCount },
     { icon: User, label: "Account", href: "/account" },
   ];
