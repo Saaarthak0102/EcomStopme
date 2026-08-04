@@ -1,9 +1,27 @@
+"use client";
+
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
+import { useCartStore } from "@/lib/store/cartStore";
 
 export function ProductCard({ product }: { product: Product }) {
+  const addItem = useCartStore((state) => state.addItem);
+  const openDrawer = useCartStore((state) => state.openDrawer);
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem({
+      id: Date.now().toString(),
+      productSlug: product.slug,
+      quantity: 1,
+      selectedVariants: {},
+      previewThumbnail: product.images[0]
+    });
+    openDrawer();
+  };
+
   return (
     <Card hoverLift className="flex h-full flex-col overflow-hidden">
       <div className="relative aspect-square w-full bg-[var(--color-surface-dim)]">
@@ -23,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
               </Button>
             </Link>
           ) : (
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full" onClick={handleAdd}>
               + Add
             </Button>
           )}

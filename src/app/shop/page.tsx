@@ -3,21 +3,38 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { CategoryRail } from "@/components/product/CategoryRail";
 import { CategoryChips } from "@/components/product/CategoryChips";
 import { FilterSortBar } from "@/components/product/FilterSortBar";
-import { Search } from "lucide-react";
+import { SearchBar } from "@/components/product/SearchBar";
 
-export default function ShopPage() {
+export default async function ShopPage({ searchParams }: { searchParams: Promise<{ q?: string; sort?: string; minPrice?: string; maxPrice?: string }> }) {
+  const resolvedParams = await searchParams;
+  let filteredProducts = [...products];
+  
+  if (resolvedParams.q) {
+    const lowerQ = resolvedParams.q.toLowerCase();
+    filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(lowerQ));
+  }
+  
+  if (resolvedParams.minPrice) {
+    filteredProducts = filteredProducts.filter(p => p.basePrice >= Number(resolvedParams.minPrice));
+  }
+  
+  if (resolvedParams.maxPrice) {
+    filteredProducts = filteredProducts.filter(p => p.basePrice <= Number(resolvedParams.maxPrice));
+  }
+
+  if (resolvedParams.sort === "price-asc") {
+    filteredProducts.sort((a, b) => a.basePrice - b.basePrice);
+  } else if (resolvedParams.sort === "price-desc") {
+    filteredProducts.sort((a, b) => b.basePrice - a.basePrice);
+  } else if (resolvedParams.sort === "name-asc") {
+    filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   return (
     <div className="mx-auto max-w-[1200px] px-6 py-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <h1 className="font-serif text-4xl font-bold text-[var(--color-primary)] italic">Shop All</h1>
-        <div className="relative w-full md:w-72">
-          <input 
-            type="text" 
-            placeholder="Search products..." 
-            className="w-full pl-10 pr-4 py-2 border border-black/10 rounded-full bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-        </div>
+        <SearchBar />
       </div>
       
       <div className="flex flex-col lg:flex-row lg:gap-8">
@@ -28,7 +45,7 @@ export default function ShopPage() {
         <div className="flex-1">
           <CategoryChips activeCategory="all" />
           <FilterSortBar />
-          <ProductGrid products={products} />
+          <ProductGrid products={filteredProducts} />
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { products } from "@/lib/data/products";
 
 export default function CheckoutPage() {
   const items = useCartStore(s => s.items);
@@ -66,6 +67,34 @@ export default function CheckoutPage() {
                 <input type="radio" name="payment" value="cod" checked={payment === "cod"} onChange={() => setPayment("cod")} className="accent-[var(--color-primary)]" />
                 <span className="font-medium">Cash on Delivery</span>
               </label>
+            </Card>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold mb-4">3. Order Items</h2>
+            <Card className="p-6">
+              <div className="space-y-4">
+                {items.map(item => {
+                  const product = products.find(p => p.slug === item.productSlug);
+                  const displayName = product?.name || item.name || "Unknown Product";
+                  const displayPrice = product?.basePrice || item.price || 0;
+                  const displayImage = item.previewThumbnail || item.image || product?.images?.[0] || "";
+
+                  return (
+                    <div key={item.id} className="flex gap-4 items-center border-b border-black/5 pb-4 last:border-0 last:pb-0">
+                      <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={displayImage} alt={displayName} className="h-full w-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">{displayName}</p>
+                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="font-semibold text-sm">₹{displayPrice * item.quantity}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
           </section>
         </div>

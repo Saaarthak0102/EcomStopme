@@ -1,4 +1,20 @@
+"use client";
+import { useState } from "react";
+
 export default function AccountDetailsPage() {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    setSaving(true);
+    setSaved(false);
+    setTimeout(() => {
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    }, 1000);
+  };
+
   return (
     <div className="mx-auto max-w-[800px] px-6 py-8">
       <h1 className="mb-8 font-serif text-3xl font-bold italic text-[var(--color-primary)]">Account Details</h1>
@@ -13,7 +29,12 @@ export default function AccountDetailsPage() {
             <label className="block text-sm font-medium mb-1">Email</label>
             <input type="email" className="w-full p-2 border border-black/10 rounded-lg" defaultValue="john@example.com" />
           </div>
-          <button className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-full font-medium mt-4">Save Changes</button>
+          <div className="flex items-center gap-4 mt-6">
+            <button onClick={handleSave} className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-full font-medium min-w-[140px] transition-all disabled:opacity-70" disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+            {saved && <span className="text-sm text-green-600 font-medium">Successfully saved!</span>}
+          </div>
         </div>
       </div>
     </div>

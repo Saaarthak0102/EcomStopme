@@ -17,6 +17,10 @@ export type CartItem = {
   uploadedImage?: string;
   engravingText?: string;
   previewThumbnail: string;
+  // Legacy fields
+  name?: string;
+  price?: number;
+  image?: string;
 };
 
 export type Address = {
