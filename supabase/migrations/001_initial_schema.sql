@@ -1,5 +1,5 @@
 -- ============================================================
--- Tattva E-Commerce — Initial Database Schema
+-- Stopme E-Commerce — Initial Database Schema
 -- Run this in Supabase SQL Editor or via: supabase db push
 -- ============================================================
 
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS nfc_memories (
   id                uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   order_id          uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   order_item_index  integer DEFAULT 0,
-  unique_nfc_id     text UNIQUE NOT NULL,   -- e.g. TTV-NFC-8f3a2b
+  unique_nfc_id     text UNIQUE NOT NULL,   -- e.g. STM-NFC-8f3a2b
   memory_link       text,                   -- URL submitted by customer
   memory_type       text,                   -- 'video'|'photo'|'audio'|'text'|'link'
   is_active         boolean DEFAULT true,

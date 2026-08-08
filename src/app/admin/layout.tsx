@@ -12,6 +12,11 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const isLoginPage = path === "/admin/login";
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F5F0EC]">

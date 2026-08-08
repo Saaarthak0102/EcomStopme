@@ -11,11 +11,28 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Protect /admin routes — basic check (full admin check done server-side)
+  // Protect /admin routes — DB check for admin access
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const adminSecret = req.cookies.get("admin_token")?.value;
-    if (!adminSecret) {
+    if (!user) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+
+    const adminEmails = (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase());
+
+    const isEmailAdmin = user.email && adminEmails.includes(user.email.toLowerCase());
+
+    if (!isEmailAdmin) {
+      const { data: adminUser } = await supabase
+        .from("admin_users")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      if (!adminUser) {
+        return NextResponse.redirect(new URL("/admin/login?error=unauthorized", req.url));
+      }
     }
   }
 
