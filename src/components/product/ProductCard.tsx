@@ -14,10 +14,15 @@ export function ProductCard({ product }: { product: Product }) {
     e.preventDefault();
     addItem({
       id: Date.now().toString(),
+      productId: product.id,
       productSlug: product.slug,
+      productName: product.name,
       quantity: 1,
+      unitPrice: product.base_price,
       selectedVariants: {},
-      previewThumbnail: product.images[0]
+      selectedVariantIds: {},
+      previewImage: product.images[0] ?? "",
+      hasNfc: product.has_nfc,
     });
     openDrawer();
   };
@@ -31,11 +36,11 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="flex flex-1 flex-col p-4">
         <h3 className="mb-1 text-sm font-semibold line-clamp-1">{product.name}</h3>
         <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-          {product.variants ? `From ₹${product.basePrice}` : `₹${product.basePrice}`}
+          {product.variants?.length ? `From ₹${(product.base_price / 100).toLocaleString("en-IN")}` : `₹${(product.base_price / 100).toLocaleString("en-IN")}`}
         </p>
         <div className="mt-auto">
-          {product.requiresPhoto || product.variants ? (
-            <Link href={`/product/${product.slug}`} className="block w-full">
+          {product.variants?.length ? (
+            <Link href={`/shop`} className="block w-full">
               <Button variant="primary" size="sm" className="w-full">
                 + Customize
               </Button>

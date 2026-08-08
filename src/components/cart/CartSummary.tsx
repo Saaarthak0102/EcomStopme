@@ -1,17 +1,12 @@
 "use client";
 
 import { useCartStore } from "@/lib/store/cartStore";
-import { products } from "@/lib/data/products";
 
 export function CartSummary() {
   const items = useCartStore(s => s.items);
   
-  const subtotal = items.reduce((acc, item) => {
-    const product = products.find(p => p.slug === item.productSlug);
-    return acc + (product?.basePrice || 0) * item.quantity;
-  }, 0);
-
-  const shipping = subtotal > 1000 ? 0 : 99;
+  const subtotal = items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
+  const shipping = 0; // free shipping
   const total = subtotal + shipping;
 
   return (

@@ -10,28 +10,28 @@ interface AddressFormProps {
   onCancel: () => void;
 }
 
+const EMPTY_ADDRESS: Address = {
+  id: "",
+  label: "Home",
+  full_name: "",
+  phone: "",
+  pincode: "",
+  street_address: "",
+  city: "",
+  state: "",
+  is_default: false,
+};
+
 export function AddressForm({ existingAddress, onSuccess, onCancel }: AddressFormProps) {
   const { addAddress, updateAddress } = useAccountStore();
-  
-  const [formData, setFormData] = useState<Address>({
-    id: "",
-    label: "Home",
-    fullName: "",
-    mobileNumber: "",
-    pinCode: "",
-    flatHouse: "",
-    areaStreet: "",
-    landmark: "",
-    city: "",
-    state: "",
-    isDefault: false
-  });
+  const [formData, setFormData] = useState<Address>(EMPTY_ADDRESS);
 
   useEffect(() => {
-    if (existingAddress) {
-      setFormData(existingAddress);
-    }
+    if (existingAddress) setFormData(existingAddress);
   }, [existingAddress]);
+
+  const set = (field: keyof Address, value: string | boolean) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,58 +48,48 @@ export function AddressForm({ existingAddress, onSuccess, onCancel }: AddressFor
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Full Name</label>
-          <input required type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+          <input required type="text" value={formData.full_name} onChange={(e) => set("full_name", e.target.value)} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Mobile Number</label>
-          <input required type="tel" value={formData.mobileNumber} onChange={(e) => setFormData({...formData, mobileNumber: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+          <input required type="tel" value={formData.phone} onChange={(e) => set("phone", e.target.value)} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">PIN Code</label>
-          <input required type="text" value={formData.pinCode} onChange={(e) => setFormData({...formData, pinCode: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+          <input required type="text" value={formData.pincode} onChange={(e) => set("pincode", e.target.value)} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Town/City</label>
-          <input required type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+          <input required type="text" value={formData.city} onChange={(e) => set("city", e.target.value)} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">State</label>
-        <input required type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+        <input required type="text" value={formData.state} onChange={(e) => set("state", e.target.value)} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Flat, House no., Building, Company, Apartment</label>
-        <input required type="text" value={formData.flatHouse} onChange={(e) => setFormData({...formData, flatHouse: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Area, Street, Sector, Village</label>
-        <input required type="text" value={formData.areaStreet} onChange={(e) => setFormData({...formData, areaStreet: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Landmark (Optional)</label>
-        <input type="text" value={formData.landmark || ""} onChange={(e) => setFormData({...formData, landmark: e.target.value})} className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
+        <label className="block text-sm font-medium mb-1">Flat / House No. / Building / Street / Area / Landmark *</label>
+        <input required type="text" value={formData.street_address} onChange={(e) => set("street_address", e.target.value)} placeholder="dhanalaxmi colony, 8-5-1/14, Mahabubnagar, Near Metro Station" className="w-full p-2 border border-black/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" />
       </div>
 
       <div className="flex items-center gap-4 pt-2">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="label" checked={formData.label === "Home"} onChange={() => setFormData({...formData, label: "Home"})} className="accent-[var(--color-primary)]" />
+          <input type="radio" name="label" checked={formData.label === "Home"} onChange={() => set("label", "Home")} className="accent-[var(--color-primary)]" />
           <span className="text-sm font-medium">Home</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="label" checked={formData.label === "Office"} onChange={() => setFormData({...formData, label: "Office"})} className="accent-[var(--color-primary)]" />
+          <input type="radio" name="label" checked={formData.label === "Office"} onChange={() => set("label", "Office")} className="accent-[var(--color-primary)]" />
           <span className="text-sm font-medium">Office</span>
         </label>
       </div>
 
       <label className="flex items-center gap-2 cursor-pointer pt-2">
-        <input type="checkbox" checked={formData.isDefault} onChange={(e) => setFormData({...formData, isDefault: e.target.checked})} className="accent-[var(--color-primary)] rounded" />
+        <input type="checkbox" checked={formData.is_default ?? false} onChange={(e) => set("is_default", e.target.checked)} className="accent-[var(--color-primary)] rounded" />
         <span className="text-sm font-medium">Make this my default address</span>
       </label>
 

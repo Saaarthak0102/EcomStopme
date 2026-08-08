@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { BottomNav } from "@/components/layout/BottomNav";
-import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
-import { StickyCartBar } from "@/components/cart/StickyCartBar";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -18,8 +13,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Stopme Store",
-  description: "Personalized photo goodies",
+  title: "Stopme — Not Just a Rakhi. A Memory They Can Keep Forever.",
+  description:
+    "A beautifully crafted 3D printed NFC Rakhi that unlocks your most meaningful moments with just one tap.",
 };
 
 export default function RootLayout({
@@ -33,14 +29,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans relative">
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <BottomNav />
-        <CartDrawer />
-        <StickyCartBar />
+        {children}
       </body>
     </html>
   );

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCartStore } from "@/lib/store/cartStore";
-import { products } from "@/lib/data/products";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export function StickyCartBar() {
@@ -11,10 +10,7 @@ export function StickyCartBar() {
   
   if (isDesktop || items.length === 0) return null;
 
-  const total = items.reduce((acc, item) => {
-    const p = products.find(prod => prod.slug === item.productSlug);
-    return acc + (p?.basePrice || 0) * item.quantity;
-  }, 0);
+  const total = items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
 
   return (
     <div className="fixed bottom-16 left-0 right-0 z-30 bg-white p-3 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] border-t border-black/5 animate-in slide-in-from-bottom-5">
