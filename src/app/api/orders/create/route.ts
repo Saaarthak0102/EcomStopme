@@ -3,10 +3,7 @@ import Razorpay from "razorpay";
 import { createServiceClient } from "@/lib/supabase/server";
 import { CartItem } from "@/lib/types";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+
 
 function generateOrderNumber(): string {
   const year = new Date().getFullYear();
@@ -22,6 +19,11 @@ function generateNfcId(): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
+
     const body = await req.json();
     const { items, total_amount, customer_email, customer_phone, shipping_address } = body as {
       items: CartItem[];
