@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, ChevronLeft, ChevronRight, Star, Check } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 // Fallback Mock Data in case DB is not reachable or empty
 const MOCK_PRODUCT = {
@@ -45,7 +46,10 @@ function formatPrice(paise: number) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
 }
 
-export default function ShopPage() {
+function ShopPageContent() {
+  const searchParams = useSearchParams();
+  const initialProductSlug = searchParams.get("product");
+
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [product, setProduct] = useState<any>(null);
   const [otherProducts, setOtherProducts] = useState<any[]>([]);
@@ -82,8 +86,10 @@ export default function ShopPage() {
         const formatted = dbProducts.map((p: any) => formatDbProduct(p));
         setAllProducts(formatted);
 
-        // Find main product (NFC Memory Rakhi)
-        const main = formatted.find((p) => p.slug === "nfc-memory-rakhi") || formatted[0];
+        // Find main product (either matching productSlug query parameter, or default slug, or first item)
+        const main = (initialProductSlug ? formatted.find((p) => p.slug === initialProductSlug) : null)
+          || formatted.find((p) => p.slug === "nfc-memory-rakhi") 
+          || formatted[0];
         setProduct(main);
         setSelectedDesign(main.head_designs[0] || null);
         setSelectedThread(main.thread_colors[0] || null);
@@ -95,10 +101,11 @@ export default function ShopPage() {
         // Fallback
         const fallbackList = [MOCK_PRODUCT, ...MOCK_MORE_RAKHIS];
         setAllProducts(fallbackList);
-        setProduct(MOCK_PRODUCT);
+        const main = (initialProductSlug ? fallbackList.find((p) => p.slug === initialProductSlug) : null) || MOCK_PRODUCT;
+        setProduct(main);
         setSelectedDesign(MOCK_PRODUCT.head_designs[0]);
         setSelectedThread(MOCK_PRODUCT.thread_colors[0]);
-        setOtherProducts(MOCK_MORE_RAKHIS);
+        setOtherProducts(fallbackList.filter((p) => p.id !== main.id).slice(0, 4));
       }
     } catch (err) {
       console.error("Failed to load shop data, using fallbacks:", err);
@@ -164,6 +171,13 @@ export default function ShopPage() {
     setSelectedThread(selectedProd.thread_colors[0] || null);
     setActiveImage(0);
     setQuantity(1);
+
+    // Update URL search parameters to preserve select state
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("product", selectedProd.slug);
+      window.history.replaceState(null, "", url.pathname + url.search);
+    }
 
     // Update other products to exclude the newly selected one
     const others = allProducts.filter((p) => p.id !== selectedProd.id).slice(0, 4);
@@ -307,9 +321,28 @@ export default function ShopPage() {
           >
             {/* Category + name */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#94492c] mb-2">
-                {product.category}
-              </p>
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#94492c]">
+                  {product.category}
+                </span>
+                <button
+                  onClick={() => {
+                    if (typeof window === "undefined") return;
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("product", product.slug);
+                    const ref = localStorage.getItem("stopme_referrer");
+                    if (ref) {
+                      url.searchParams.set("ref", ref);
+                    }
+                    navigator.clipboard.writeText(url.toString());
+                    alert("Product share link copied to clipboard!");
+                  }}
+                  className="text-[11px] bg-[#94492c]/10 text-[#94492c] hover:bg-[#94492c]/20 px-3 py-1 rounded-full font-semibold transition-colors flex items-center gap-1"
+                  title="Copy share link for this product"
+                >
+                  🔗 Copy Share Link
+                </button>
+              </div>
               <h1 className="text-4xl lg:text-5xl font-bold font-serif text-[#1B1C1C] leading-tight">
                 {product.name}
               </h1>
@@ -544,5 +577,18 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FBF7F4] flex flex-col items-center justify-center gap-3">
+        <div className="w-10 h-10 border-4 border-[#94492c] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[14px] text-[#7A6860] font-medium">Loading Shop...</p>
+      </div>
+    }>
+      <ShopPageContent />
+    </Suspense>
   );
 }

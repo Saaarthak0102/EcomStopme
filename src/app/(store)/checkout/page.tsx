@@ -80,6 +80,9 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     setIsLoading(true);
     try {
+      // Retrieve the influencer/referrer code stored in localStorage
+      const referrer = typeof window !== "undefined" ? localStorage.getItem("stopme_referrer") : null;
+
       // 1. Create Razorpay order via API
       const createRes = await fetch("/api/orders/create", {
         method: "POST",
@@ -89,6 +92,7 @@ export default function CheckoutPage() {
           total_amount: total,
           customer_email: watch("email"),
           customer_phone: watch("phone"),
+          referrer,
           shipping_address: {
             full_name: watch("full_name"),
             phone: watch("phone"),

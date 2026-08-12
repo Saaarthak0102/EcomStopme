@@ -20,6 +20,7 @@ type KpiData = {
   orders_by_status: Record<string, number>;
   revenue_by_day: { date: string; revenue: number }[];
   top_products: { name: string; count: number }[];
+  referrers: { code: string; count: number; revenue: number; royalty: number }[];
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -66,7 +67,7 @@ export default function KpiPage() {
         { data: allOrders },
         { data: views },
       ] = await Promise.all([
-        supabase.from("orders").select("id, total_amount, status, created_at, items"),
+        supabase.from("orders").select("id, total_amount, status, created_at, items, referrer"),
         supabase.from("product_views").select("id, viewed_at"),
       ]);
 
@@ -112,6 +113,26 @@ export default function KpiPage() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
+      // Referrers tracking (aggregate paid orders by referrer)
+      const referrerStats: Record<string, { count: number; revenue: number }> = {};
+      paidOrders.forEach((o) => {
+        const ref = o.referrer || "Direct / Organic";
+        if (!referrerStats[ref]) {
+          referrerStats[ref] = { count: 0, revenue: 0 };
+        }
+        referrerStats[ref].count += 1;
+        referrerStats[ref].revenue += o.total_amount;
+      });
+
+      const referrers = Object.entries(referrerStats)
+        .map(([code, stats]) => ({
+          code,
+          count: stats.count,
+          revenue: stats.revenue,
+          royalty: stats.revenue * 0.10 // 10% royalty
+        }))
+        .sort((a, b) => b.revenue - a.revenue);
+
       setData({
         total_revenue: totalRevenue,
         orders_today: ordersToday,
@@ -124,6 +145,7 @@ export default function KpiPage() {
         orders_by_status: byStatus,
         revenue_by_day: revenueByDay,
         top_products: topProducts,
+        referrers: referrers,
       });
       setLoading(false);
     })();
@@ -234,6 +256,40 @@ export default function KpiPage() {
             </ResponsiveContainer>
           )}
         </div>
+      </div>
+
+      {/* Influencer Referrals & Royalty Tracker */}
+      <div className="bg-white rounded-2xl border border-[#e8ddd7] p-6">
+        <div className="flex flex-col gap-1 mb-6">
+          <h2 className="font-bold text-lg text-[#1B1C1C]">Influencer Referrals & Royalty Tracker</h2>
+          <p className="text-xs text-[#7A6860]">Order referrers tracked from custom links (10% estimated royalty)</p>
+        </div>
+        {d.referrers.length === 0 ? (
+          <p className="text-[#7A6860] text-sm text-center py-10">No referral sales recorded yet</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-[#e8ddd7] text-[#7A6860] font-bold">
+                  <th className="pb-3 pr-4">Influencer / Code</th>
+                  <th className="pb-3 px-4 text-center">Orders</th>
+                  <th className="pb-3 px-4 text-right">Total Revenue</th>
+                  <th className="pb-3 pl-4 text-right text-[#94492c]">Est. Royalty (10%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {d.referrers.map((ref) => (
+                  <tr key={ref.code} className="border-b border-[#f5eded] last:border-0 hover:bg-[#FBF7F4]/50 transition-colors">
+                    <td className="py-3 pr-4 font-semibold text-[#1B1C1C]">{ref.code}</td>
+                    <td className="py-3 px-4 text-center text-[#7A6860]">{ref.count}</td>
+                    <td className="py-3 px-4 text-right font-medium text-[#1B1C1C]">{formatPrice(ref.revenue)}</td>
+                    <td className="py-3 pl-4 text-right font-bold text-[#94492c]">{formatPrice(ref.royalty)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

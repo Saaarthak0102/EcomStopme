@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { ReferrerTracker } from "@/components/ReferrerTracker";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -29,6 +30,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans relative">
+        <ReferrerTracker />
         {children}
       </body>
     </html>

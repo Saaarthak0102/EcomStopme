@@ -25,12 +25,13 @@ export async function POST(req: NextRequest) {
     });
 
     const body = await req.json();
-    const { items, total_amount, customer_email, customer_phone, shipping_address } = body as {
+    const { items, total_amount, customer_email, customer_phone, shipping_address, referrer } = body as {
       items: CartItem[];
       total_amount: number;
       customer_email: string;
       customer_phone: string;
       shipping_address: Record<string, string>;
+      referrer?: string | null;
     };
 
     if (!items?.length || !total_amount || !customer_email) {
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
         shipping_address,
         status: "pending",
         razorpay_order_id: rzpOrder.id,
+        referrer: referrer || null,
       })
       .select()
       .single();
