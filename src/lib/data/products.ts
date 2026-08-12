@@ -10,6 +10,7 @@ export const products: Product[] = [
     base_price: 249900,
     images: ["/shop_rakhi_hero.png"],
     has_nfc: true,
+    rakhi_type: "none",
     is_active: true,
     display_order: 1,
     created_at: new Date().toISOString(),

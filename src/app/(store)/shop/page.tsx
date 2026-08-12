@@ -148,6 +148,7 @@ export default function ShopPage() {
       base_price: data.base_price,
       images: data.images && data.images.length > 0 ? data.images : MOCK_PRODUCT.images,
       has_nfc: data.has_nfc,
+      rakhi_type: data.rakhi_type || "none",
       rating: 4.9,
       review_count: 2147,
       badge: badge,
@@ -223,6 +224,7 @@ export default function ShopPage() {
       selectedVariantIds: { head_design: selectedDesign.id, thread_color: selectedThread.id },
       previewImage: product.images[activeImage] || "/shop_rakhi_hero.png",
       hasNfc: product.has_nfc,
+      rakhiType: product.rakhi_type || "none",
     });
     setAdded(true);
     openDrawer();
@@ -464,8 +466,15 @@ export default function ShopPage() {
               {[
                 { icon: "📦", label: "Free Delivery", sub: "Pan India" },
                 { icon: "🔒", label: "Secure Payment", sub: "Razorpay" },
-                { icon: "📱", label: "NFC Enabled", sub: "Tap to unlock" },
-                { icon: "♾️", label: "Works Forever", sub: "No battery needed" },
+                ...(product.has_nfc
+                  ? [
+                      { icon: "📱", label: "NFC Enabled", sub: "Tap to unlock" },
+                      { icon: "♾️", label: "Works Forever", sub: "No battery needed" },
+                    ]
+                  : [
+                      { icon: "📷", label: "Photo Keepsake", sub: "High-quality print" },
+                      { icon: "✨", label: "Premium Resin", sub: "Handcrafted art" },
+                    ]),
               ].map((p) => (
                 <div key={p.label} className="flex items-center gap-3">
                   <span className="text-2xl">{p.icon}</span>

@@ -1,6 +1,8 @@
 // ============================================================
 // PRODUCT
 // ============================================================
+export type RakhiType = "none" | "name" | "photo";
+
 export type Product = {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export type Product = {
   base_price: number;          // in paise
   images: string[];
   has_nfc: boolean;
+  rakhi_type: RakhiType;       // "none" | "name" | "photo"
   is_active: boolean;
   display_order: number;
   category: string;
@@ -42,6 +45,7 @@ export type CartItem = {
   selectedVariantIds: Record<string, string>; // { head_design: uuid }
   previewImage: string;
   hasNfc: boolean;
+  rakhiType: RakhiType;        // "none" | "name" | "photo"
 };
 
 // ============================================================
@@ -99,6 +103,9 @@ export type OrderItem = {
   quantity: number;
   unit_price: number;
   has_nfc: boolean;
+  rakhi_type?: RakhiType;      // "none" | "name" | "photo"
+  name_inputs?: string[];      // one per piece (length === quantity)
+  photo_urls?: string[];       // one per piece (length === quantity)
 };
 
 // ============================================================

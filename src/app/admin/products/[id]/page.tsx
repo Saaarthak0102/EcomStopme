@@ -15,6 +15,7 @@ const schema = z.object({
   description:   z.string().optional(),
   base_price:    z.coerce.number().min(1, "Price required (in ₹)"),
   has_nfc:       z.boolean(),
+  rakhi_type:    z.enum(["none", "name", "photo"]).default("none"),
   display_order: z.coerce.number().default(0),
   variants: z.array(z.object({
     type:        z.enum(["head_design", "thread_color", "size"]),
@@ -37,7 +38,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { register, control, handleSubmit, watch, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema) as any,
-    defaultValues: { has_nfc: false, display_order: 0, variants: [] },
+    defaultValues: { has_nfc: false, rakhi_type: "none", display_order: 0, variants: [] },
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,6 +68,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           description: data.description || "",
           base_price: data.base_price / 100, // paise → ₹
           has_nfc: data.has_nfc,
+          rakhi_type: data.rakhi_type || "none",
           display_order: data.display_order,
           variants: (data.product_variants || []).map((v: any) => ({
             type: v.type,
@@ -116,6 +118,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           description:   data.description,
           base_price:    Math.round(data.base_price * 100), // ₹ → paise
           has_nfc:       data.has_nfc,
+          rakhi_type:    data.rakhi_type,
           images:        uploadedImages,
           display_order: data.display_order,
         })
@@ -216,6 +219,32 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <p className="text-[12px] text-[#7A6860]">Customers will be asked to submit a memory link after purchase</p>
             </div>
           </label>
+
+          {/* Rakhi Type */}
+          <div>
+            <p className="text-[13px] font-semibold text-[#1B1C1C] mb-2">Rakhi Type</p>
+            <p className="text-[12px] text-[#7A6860] mb-3">What extra information should customers provide after purchase?</p>
+            <div className="flex flex-col gap-2">
+              {([
+                { value: "none",  label: "None",         hint: "No extra info required" },
+                { value: "name",  label: "Name-based",   hint: "Customer enters 1 name per rakhi (great for engraving)" },
+                { value: "photo", label: "Photo-based",  hint: "Customer uploads 1 photo per rakhi" },
+              ] as const).map(({ value, label, hint }) => (
+                <label key={value} className="flex items-start gap-3 p-3 rounded-xl border border-[#e8ddd7] cursor-pointer hover:border-[#94492c]/40 transition-colors has-[:checked]:border-[#94492c] has-[:checked]:bg-[#94492c]/5">
+                  <input
+                    type="radio"
+                    value={value}
+                    {...register("rakhi_type")}
+                    className="mt-0.5 accent-[#94492c]"
+                  />
+                  <div>
+                    <p className="font-semibold text-[13px] text-[#1B1C1C]">{label}</p>
+                    <p className="text-[11px] text-[#7A6860]">{hint}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Images */}

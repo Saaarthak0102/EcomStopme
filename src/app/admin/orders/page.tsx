@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Order, OrderStatus } from "@/lib/types";
+import { Order, OrderStatus, OrderItem } from "@/lib/types";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -21,7 +21,49 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 function formatPrice(paise: number) {
-  return `₹${(paise / 100).toLocaleString("en-IN")}`;
+  return `Rs.${(paise / 100).toLocaleString("en-IN")}`;
+}
+
+function CustomizationBadge({ items }: { items: OrderItem[] }) {
+  const nameItems  = items.filter((i: any) => i.rakhi_type === "name");
+  const photoItems = items.filter((i: any) => i.rakhi_type === "photo");
+
+  if (!nameItems.length && !photoItems.length) {
+    return <span className="text-[12px] text-[#b0a09a]">-</span>;
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {nameItems.map((item: any, i: number) => (
+        <div key={`n-${i}`} className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-[#5B4FCF]">Name: {item.product_name}</span>
+          {item.name_inputs?.length ? (
+            item.name_inputs.map((name: string, j: number) => (
+              <span key={j} className="text-[11px] text-[#1B1C1C] font-medium ml-2">- {name}</span>
+            ))
+          ) : (
+            <span className="text-[11px] text-amber-600 ml-2 italic">Awaiting names</span>
+          )}
+        </div>
+      ))}
+      {photoItems.map((item: any, i: number) => (
+        <div key={`p-${i}`} className="flex flex-col gap-1">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-[#94492c]">Photo: {item.product_name}</span>
+          {item.photo_urls?.length ? (
+            <div className="flex gap-1 flex-wrap ml-2">
+              {item.photo_urls.map((url: string, j: number) => (
+                <a key={j} href={url} target="_blank" rel="noreferrer">
+                  <img src={url} alt={`Photo ${j + 1}`} className="w-10 h-10 rounded-lg object-cover border border-[#e8ddd7] hover:opacity-80 transition-opacity" />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[11px] text-amber-600 ml-2 italic">Awaiting photos</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function AdminOrdersPage() {
@@ -72,13 +114,12 @@ export default function AdminOrdersPage() {
         <p className="text-[#7A6860] text-sm">{filtered.length} orders</p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search order #, email, phone…"
+          placeholder="Search order #, email, phone..."
           className="border border-[#e8ddd7] rounded-xl px-4 py-2.5 text-[13px] focus:outline-none focus:border-[#94492c] bg-white min-w-[220px]"
         />
         <div className="flex gap-2 flex-wrap">
@@ -104,7 +145,6 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-8 h-8 border-2 border-[#94492c] border-t-transparent rounded-full animate-spin" />
@@ -114,11 +154,11 @@ export default function AdminOrdersPage() {
           No orders found
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#e8ddd7] overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white rounded-2xl border border-[#e8ddd7] overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[960px]">
             <thead className="border-b border-[#e8ddd7] bg-[#FBF7F4]">
               <tr>
-                {["Order #", "Customer", "Amount", "Status", "Date", "Actions"].map((h) => (
+                {["Order #", "Customer", "Amount", "Status", "Customization", "Date", "Actions"].map((h) => (
                   <th key={h} className="text-left px-5 py-3 text-[12px] font-bold uppercase tracking-wide text-[#7A6860]">
                     {h}
                   </th>
@@ -157,6 +197,9 @@ export default function AdminOrdersPage() {
                         ))}
                       </select>
                     </td>
+                    <td className="px-5 py-4 max-w-[200px]">
+                      <CustomizationBadge items={(order.items as OrderItem[]) ?? []} />
+                    </td>
                     <td className="px-5 py-4 text-[12px] text-[#7A6860]">
                       {new Date(order.created_at).toLocaleDateString("en-IN", { dateStyle: "medium" })}
                     </td>
@@ -165,7 +208,7 @@ export default function AdminOrdersPage() {
                         href={`/admin/orders/${order.id}`}
                         className="text-[12px] font-semibold text-[#94492c] hover:underline"
                       >
-                        View →
+                        View &rarr;
                       </Link>
                     </td>
                   </motion.tr>

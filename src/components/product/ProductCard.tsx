@@ -23,6 +23,7 @@ export function ProductCard({ product }: { product: Product }) {
       selectedVariantIds: {},
       previewImage: product.images[0] ?? "",
       hasNfc: product.has_nfc,
+      rakhiType: product.rakhi_type ?? "none",
     });
     openDrawer();
   };

@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       quantity: item.quantity,
       unit_price: item.unitPrice,
       has_nfc: item.hasNfc,
+      rakhi_type: item.rakhiType || "none",
     }));
 
     const { data: order, error } = await supabase
