@@ -1,6 +1,6 @@
 # Stopme Store
 
-Welcome to the Stopme e-commerce application! This platform allows users to browse premium personalized photo gifts, customize their items in an interactive studio, and securely check out. 
+Welcome to the Stopme e-commerce application!! This platform allows users to browse premium personalized photo gifts, customize their items in an interactive studio, and securely check out. 
 
 ## Overview
 
