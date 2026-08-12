@@ -6,7 +6,7 @@ import { Product } from "@/lib/types";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit2, Eye, EyeOff } from "lucide-react";
+import { Plus, Edit2, Eye, EyeOff, Trash2 } from "lucide-react";
 
 function formatPrice(paise: number) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
@@ -32,6 +32,19 @@ export default function AdminProductsPage() {
     const supabase = createClient();
     await supabase.from("products").update({ is_active: !current }).eq("id", id);
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: !current } : p)));
+  };
+
+  const deleteProduct = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${name}"? This action cannot be undone and will delete all associated variants.`)) {
+      return;
+    }
+    const supabase = createClient();
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      alert(`Failed to delete product: ${error.message}`);
+    } else {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    }
   };
 
   return (
@@ -101,6 +114,12 @@ export default function AdminProductsPage() {
                   >
                     {product.is_active ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                     {product.is_active ? "Hide" : "Show"}
+                  </button>
+                  <button
+                    onClick={() => deleteProduct(product.id, product.name)}
+                    className="flex items-center gap-1.5 text-[12px] font-semibold text-red-600 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 hover:border-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" /> Delete
                   </button>
                 </div>
               </div>

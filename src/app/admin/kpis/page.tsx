@@ -20,7 +20,7 @@ type KpiData = {
   orders_by_status: Record<string, number>;
   revenue_by_day: { date: string; revenue: number }[];
   top_products: { name: string; count: number }[];
-  referrers: { code: string; count: number; revenue: number; royalty: number; clicks: number; conversion_rate: number }[];
+  referrers: { code: string; count: number; revenue: number; royalty: number; clicks: number; views: number; conversion_rate: number }[];
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -91,7 +91,7 @@ export default function KpiPage() {
         { data: clicksData }
       ] = await Promise.all([
         supabase.from("orders").select("id, total_amount, status, created_at, items, referrer"),
-        supabase.from("product_views").select("id, viewed_at"),
+        supabase.from("product_views").select("id, viewed_at, referrer, product_id"),
         supabase.from("products").select("name, slug").eq("is_active", true),
         supabase.from("referral_clicks").select("referrer, session_id")
       ]);
@@ -147,6 +147,13 @@ export default function KpiPage() {
         clickCounts[ref] = (clickCounts[ref] || 0) + 1;
       });
 
+      // Count unique views by referrer
+      const viewCounts: Record<string, number> = {};
+      (views || []).forEach((v) => {
+        const ref = v.referrer || "Direct / Organic";
+        viewCounts[ref] = (viewCounts[ref] || 0) + 1;
+      });
+
       // Referrers tracking (aggregate paid orders by referrer)
       const referrerStats: Record<string, { count: number; revenue: number }> = {};
       paidOrders.forEach((o) => {
@@ -158,16 +165,18 @@ export default function KpiPage() {
         referrerStats[ref].revenue += o.total_amount;
       });
 
-      // Get all unique referrers from both orders and clicks
+      // Get all unique referrers from orders, clicks, and views
       const allReferrerCodes = new Set([
         ...paidOrders.map(o => o.referrer || "Direct / Organic"),
-        ...(clicksData || []).map(c => c.referrer || "Direct / Organic")
+        ...(clicksData || []).map(c => c.referrer || "Direct / Organic"),
+        ...(views || []).map(v => v.referrer || "Direct / Organic")
       ]);
 
       const referrers = Array.from(allReferrerCodes)
         .map((code) => {
           const stats = referrerStats[code] || { count: 0, revenue: 0 };
           const clicks = clickCounts[code] || 0;
+          const prodViews = viewCounts[code] || 0;
           const convRate = clicks ? (stats.count / clicks) * 100 : 0;
           return {
             code,
@@ -175,6 +184,7 @@ export default function KpiPage() {
             revenue: stats.revenue,
             royalty: stats.revenue * 0.10, // 10% royalty
             clicks,
+            views: prodViews,
             conversion_rate: convRate
           };
         })
@@ -374,6 +384,7 @@ export default function KpiPage() {
                   <tr className="border-b border-[#e8ddd7] text-[#7A6860] font-bold">
                     <th className="pb-3 pr-4">Influencer / Code</th>
                     <th className="pb-3 px-4 text-center">Clicks</th>
+                    <th className="pb-3 px-4 text-center">Prod Views</th>
                     <th className="pb-3 px-4 text-center">Orders</th>
                     <th className="pb-3 px-4 text-center">Conv. Rate</th>
                     <th className="pb-3 px-4 text-right">Total Revenue</th>
@@ -385,6 +396,7 @@ export default function KpiPage() {
                     <tr key={ref.code} className="border-b border-[#f5eded] last:border-0 hover:bg-[#FBF7F4]/50 transition-colors">
                       <td className="py-3 pr-4 font-semibold text-[#1B1C1C]">{ref.code}</td>
                       <td className="py-3 px-4 text-center text-[#7A6860]">{ref.clicks}</td>
+                      <td className="py-3 px-4 text-center text-[#7A6860]">{ref.views}</td>
                       <td className="py-3 px-4 text-center text-[#7A6860]">{ref.count}</td>
                       <td className="py-3 px-4 text-center text-[#7A6860]">{ref.conversion_rate.toFixed(1)}%</td>
                       <td className="py-3 px-4 text-right font-medium text-[#1B1C1C]">{formatPrice(ref.revenue)}</td>
