@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/account";
+
+  // Reconstruct public origin from headers for reverse proxy compatibility
+  const proto = req.headers.get("x-forwarded-proto") || "http";
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost:3000";
+  const publicOrigin = `${proto}://${host}`;
 
   if (code) {
     const supabase = await createClient();
@@ -25,9 +30,9 @@ export async function GET(req: NextRequest) {
           });
         }
       }
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${publicOrigin}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth/login?error=could_not_authenticate`);
+  return NextResponse.redirect(`${publicOrigin}/auth/login?error=could_not_authenticate`);
 }
