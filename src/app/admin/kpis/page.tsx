@@ -20,7 +20,7 @@ type KpiData = {
   orders_by_status: Record<string, number>;
   revenue_by_day: { date: string; revenue: number }[];
   top_products: { name: string; count: number }[];
-  referrers: { code: string; count: number; revenue: number; royalty: number }[];
+  referrers: { code: string; count: number; revenue: number; royalty: number; clicks: number; conversion_rate: number }[];
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -54,6 +54,27 @@ export default function KpiPage() {
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<"7d" | "30d" | "all">("30d");
 
+  // States for Referral Link Generator
+  const [productsList, setProductsList] = useState<{ name: string; slug: string }[]>([]);
+  const [influencerCode, setInfluencerCode] = useState("");
+  const [selectedProductSlug, setSelectedProductSlug] = useState("");
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!influencerCode.trim()) {
+      setGeneratedLink("");
+      return;
+    }
+    const base = typeof window !== "undefined" ? window.location.origin : "https://stopme.in";
+    const cleanCode = encodeURIComponent(influencerCode.trim());
+    let path = `${base}/shop?ref=${cleanCode}`;
+    if (selectedProductSlug) {
+      path = `${base}/shop?product=${selectedProductSlug}&ref=${cleanCode}`;
+    }
+    setGeneratedLink(path);
+  }, [influencerCode, selectedProductSlug]);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -66,10 +87,16 @@ export default function KpiPage() {
       const [
         { data: allOrders },
         { data: views },
+        { data: productsData },
+        { data: clicksData }
       ] = await Promise.all([
         supabase.from("orders").select("id, total_amount, status, created_at, items, referrer"),
         supabase.from("product_views").select("id, viewed_at"),
+        supabase.from("products").select("name, slug").eq("is_active", true),
+        supabase.from("referral_clicks").select("referrer, session_id")
       ]);
+
+      setProductsList(productsData || []);
 
       const orders = allOrders ?? [];
       const paidOrders = orders.filter((o) => o.status !== "pending" && o.status !== "cancelled");
@@ -113,6 +140,13 @@ export default function KpiPage() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
+      // Count unique clicks by referrer
+      const clickCounts: Record<string, number> = {};
+      (clicksData || []).forEach((c) => {
+        const ref = c.referrer || "Direct / Organic";
+        clickCounts[ref] = (clickCounts[ref] || 0) + 1;
+      });
+
       // Referrers tracking (aggregate paid orders by referrer)
       const referrerStats: Record<string, { count: number; revenue: number }> = {};
       paidOrders.forEach((o) => {
@@ -124,14 +158,27 @@ export default function KpiPage() {
         referrerStats[ref].revenue += o.total_amount;
       });
 
-      const referrers = Object.entries(referrerStats)
-        .map(([code, stats]) => ({
-          code,
-          count: stats.count,
-          revenue: stats.revenue,
-          royalty: stats.revenue * 0.10 // 10% royalty
-        }))
-        .sort((a, b) => b.revenue - a.revenue);
+      // Get all unique referrers from both orders and clicks
+      const allReferrerCodes = new Set([
+        ...paidOrders.map(o => o.referrer || "Direct / Organic"),
+        ...(clicksData || []).map(c => c.referrer || "Direct / Organic")
+      ]);
+
+      const referrers = Array.from(allReferrerCodes)
+        .map((code) => {
+          const stats = referrerStats[code] || { count: 0, revenue: 0 };
+          const clicks = clickCounts[code] || 0;
+          const convRate = clicks ? (stats.count / clicks) * 100 : 0;
+          return {
+            code,
+            count: stats.count,
+            revenue: stats.revenue,
+            royalty: stats.revenue * 0.10, // 10% royalty
+            clicks,
+            conversion_rate: convRate
+          };
+        })
+        .sort((a, b) => b.revenue - a.revenue || b.clicks - a.clicks);
 
       setData({
         total_revenue: totalRevenue,
@@ -258,38 +305,97 @@ export default function KpiPage() {
         </div>
       </div>
 
-      {/* Influencer Referrals & Royalty Tracker */}
-      <div className="bg-white rounded-2xl border border-[#e8ddd7] p-6">
-        <div className="flex flex-col gap-1 mb-6">
-          <h2 className="font-bold text-lg text-[#1B1C1C]">Influencer Referrals & Royalty Tracker</h2>
-          <p className="text-xs text-[#7A6860]">Order referrers tracked from custom links (10% estimated royalty)</p>
-        </div>
-        {d.referrers.length === 0 ? (
-          <p className="text-[#7A6860] text-sm text-center py-10">No referral sales recorded yet</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-[#e8ddd7] text-[#7A6860] font-bold">
-                  <th className="pb-3 pr-4">Influencer / Code</th>
-                  <th className="pb-3 px-4 text-center">Orders</th>
-                  <th className="pb-3 px-4 text-right">Total Revenue</th>
-                  <th className="pb-3 pl-4 text-right text-[#94492c]">Est. Royalty (10%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {d.referrers.map((ref) => (
-                  <tr key={ref.code} className="border-b border-[#f5eded] last:border-0 hover:bg-[#FBF7F4]/50 transition-colors">
-                    <td className="py-3 pr-4 font-semibold text-[#1B1C1C]">{ref.code}</td>
-                    <td className="py-3 px-4 text-center text-[#7A6860]">{ref.count}</td>
-                    <td className="py-3 px-4 text-right font-medium text-[#1B1C1C]">{formatPrice(ref.revenue)}</td>
-                    <td className="py-3 pl-4 text-right font-bold text-[#94492c]">{formatPrice(ref.royalty)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Referral Link Management Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Referral Link Generator */}
+        <div className="bg-white rounded-2xl border border-[#e8ddd7] p-6 flex flex-col gap-4">
+          <div>
+            <h2 className="font-bold text-lg text-[#1B1C1C]">Create Referral Link</h2>
+            <p className="text-xs text-[#7A6860] mt-1">Generate a custom tracked URL for an influencer</p>
           </div>
-        )}
+          
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-bold text-[#7A6860] uppercase tracking-wider">Influencer Code / Name</label>
+            <input
+              type="text"
+              placeholder="e.g. sharma_ji"
+              value={influencerCode}
+              onChange={(e) => setInfluencerCode(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border border-[#e8ddd7] bg-[#FBF7F4]/50 focus:outline-none focus:border-[#94492c] text-sm text-[#1B1C1C]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-bold text-[#7A6860] uppercase tracking-wider">Target Product (Optional)</label>
+            <select
+              value={selectedProductSlug}
+              onChange={(e) => setSelectedProductSlug(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border border-[#e8ddd7] bg-[#FBF7F4]/50 focus:outline-none focus:border-[#94492c] text-sm text-[#1B1C1C]"
+            >
+              <option value="">All Products (Shop Home)</option>
+              {productsList.map((p) => (
+                <option key={p.slug} value={p.slug}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {generatedLink && (
+            <div className="mt-2 p-4 bg-[#FBF7F4] border border-[#e8ddd7] rounded-xl flex flex-col gap-2">
+              <span className="text-[11px] font-bold text-[#7A6860] uppercase tracking-wider">Generated Link</span>
+              <p className="text-xs font-mono break-all text-[#1B1C1C] bg-white border border-[#e8ddd7] p-2 rounded-lg">{generatedLink}</p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedLink);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className={`py-2 rounded-lg text-xs font-bold transition-all text-white ${
+                  copied ? "bg-green-600" : "bg-[#94492c] hover:bg-[#7a3b22]"
+                }`}
+              >
+                {copied ? "Copied!" : "Copy Link"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Influencer Referrals & Royalty Tracker Table */}
+        <div className="bg-white rounded-2xl border border-[#e8ddd7] p-6 lg:col-span-2">
+          <div className="flex flex-col gap-1 mb-6">
+            <h2 className="font-bold text-lg text-[#1B1C1C]">Influencer Referrals & Royalty Tracker</h2>
+            <p className="text-xs text-[#7A6860]">Order referrers tracked from custom links (10% estimated royalty)</p>
+          </div>
+          {d.referrers.length === 0 ? (
+            <p className="text-[#7A6860] text-sm text-center py-10">No referral sales recorded yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-[#e8ddd7] text-[#7A6860] font-bold">
+                    <th className="pb-3 pr-4">Influencer / Code</th>
+                    <th className="pb-3 px-4 text-center">Clicks</th>
+                    <th className="pb-3 px-4 text-center">Orders</th>
+                    <th className="pb-3 px-4 text-center">Conv. Rate</th>
+                    <th className="pb-3 px-4 text-right">Total Revenue</th>
+                    <th className="pb-3 pl-4 text-right text-[#94492c]">Est. Royalty (10%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.referrers.map((ref) => (
+                    <tr key={ref.code} className="border-b border-[#f5eded] last:border-0 hover:bg-[#FBF7F4]/50 transition-colors">
+                      <td className="py-3 pr-4 font-semibold text-[#1B1C1C]">{ref.code}</td>
+                      <td className="py-3 px-4 text-center text-[#7A6860]">{ref.clicks}</td>
+                      <td className="py-3 px-4 text-center text-[#7A6860]">{ref.count}</td>
+                      <td className="py-3 px-4 text-center text-[#7A6860]">{ref.conversion_rate.toFixed(1)}%</td>
+                      <td className="py-3 px-4 text-right font-medium text-[#1B1C1C]">{formatPrice(ref.revenue)}</td>
+                      <td className="py-3 pl-4 text-right font-bold text-[#94492c]">{formatPrice(ref.royalty)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
