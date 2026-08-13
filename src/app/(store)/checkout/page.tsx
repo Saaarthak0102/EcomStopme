@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Check, ChevronDown, ChevronUp, MapPin, CreditCard, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
+import { fbqEvent } from "@/lib/metaPixel";
 
 // ── Validation schema ─────────────────────────────────────────
 const addressSchema = z.object({
@@ -137,6 +138,16 @@ export default function CheckoutPage() {
               razorpay_signature: response.razorpay_signature,
             }),
           });
+
+          // Meta Pixel: Purchase
+          fbqEvent("Purchase", {
+            content_ids: items.map((i) => i.productId),
+            content_type: "product",
+            value: total / 100,
+            currency: "INR",
+            num_items: items.reduce((a, i) => a + i.quantity, 0),
+          });
+
           clearCart();
           router.push(`/checkout/success?order_id=${order_id}&order_number=${order_number}`);
         },

@@ -8,6 +8,7 @@ import { ShoppingBag, ChevronLeft, ChevronRight, Star, Check } from "lucide-reac
 import { useCartStore } from "@/lib/store/cartStore";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams, useRouter } from "next/navigation";
+import { fbqEvent } from "@/lib/metaPixel";
 
 // Fallback Mock Data in case DB is not reachable or empty
 const MOCK_PRODUCT = {
@@ -102,6 +103,15 @@ function ShopPageContent() {
           } else {
             console.log(`[product_views] Product view recorded for ${product.name} (referrer: ${ref})`);
           }
+
+          // Meta Pixel: ViewContent — fires once per session per product
+          fbqEvent("ViewContent", {
+            content_ids: [product.id],
+            content_type: "product",
+            content_name: product.name,
+            value: product.base_price / 100,
+            currency: "INR",
+          });
         }
       } catch (e) {
         console.error("[product_views] Failed to log product view:", e);
@@ -292,6 +302,17 @@ function ShopPageContent() {
       hasNfc: product.has_nfc,
       rakhiType: product.rakhi_type || "none",
     });
+
+    // Meta Pixel: AddToCart
+    fbqEvent("AddToCart", {
+      content_ids: [product.id],
+      content_type: "product",
+      content_name: product.name,
+      value: (totalPrice * quantity) / 100,
+      currency: "INR",
+      num_items: quantity,
+    });
+
     setAdded(true);
     openDrawer();
     setTimeout(() => setAdded(false), 2000);
