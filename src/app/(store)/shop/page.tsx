@@ -64,6 +64,8 @@ function ShopPageContent() {
 
   const addItem = useCartStore((s) => s.addItem);
   const openDrawer = useCartStore((s) => s.openDrawer);
+  const cartItems = useCartStore((s) => s.items);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
     loadShopData();
@@ -299,6 +301,48 @@ function ShopPageContent() {
 
   return (
     <div className="min-h-screen bg-[#FBF7F4]">
+      {/* Mobile Top Header */}
+      <header className="lg:hidden sticky top-0 z-30 w-full bg-[#FBF7F4]/90 backdrop-blur-md border-b border-[#e8ddd7] px-4 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2">
+          {showDetail ? (
+            <button
+              onClick={() => {
+                const ref = searchParams.get("ref");
+                const url = ref ? `/shop?ref=${ref}` : `/shop`;
+                router.push(url);
+              }}
+              className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-[#e8ddd7] active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="w-5 h-5 text-[#54433d]" />
+            </button>
+          ) : (
+            <Link href="/" className="text-xl font-bold italic font-serif text-[#94492c]">
+              Stopme
+            </Link>
+          )}
+        </div>
+
+        <div className="absolute left-1/2 -translate-x-1/2 text-center">
+          <span className="font-serif font-bold text-[15px] sm:text-[16px] text-[#1B1C1C] truncate max-w-[180px] sm:max-w-[260px] block">
+            {showDetail ? product.name : "Shop Catalog"}
+          </span>
+        </div>
+
+        <div className="flex items-center">
+          <button
+            onClick={openDrawer}
+            className="relative w-9 h-9 rounded-full bg-white flex items-center justify-center border border-[#e8ddd7] active:scale-95 transition-transform text-[#54433d]"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#94492c] text-[10px] font-bold text-white shadow-sm">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </header>
+
       {!showDetail ? (
         /* Grid catalog list (4 per row) */
         <div className="mx-auto max-w-7xl px-4 md:px-8 py-12 flex flex-col gap-10">
@@ -357,7 +401,7 @@ function ShopPageContent() {
               const url = ref ? `/shop?ref=${ref}` : `/shop`;
               router.push(url);
             }}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#7A6860] hover:text-[#94492c] transition-colors mb-8 uppercase tracking-wider"
+            className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-[#7A6860] hover:text-[#94492c] transition-colors mb-8 uppercase tracking-wider"
           >
             ← Back to Catalog
           </button>

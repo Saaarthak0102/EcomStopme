@@ -8,6 +8,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Upload, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { updateProductAction } from "../actions";
 
 const schema = z.object({
   name:          z.string().min(2),
@@ -106,48 +107,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const onSubmit = async (data: FormData) => {
     setSaving(true);
     setError(null);
-    const supabase = createClient();
 
     try {
-      // 1. Update product base info
-      const { error: productError } = await supabase
-        .from("products")
-        .update({
-          name:          data.name,
-          slug:          data.slug,
-          description:   data.description,
-          base_price:    Math.round(data.base_price * 100), // ₹ → paise
-          has_nfc:       data.has_nfc,
-          rakhi_type:    data.rakhi_type,
-          images:        uploadedImages,
-          display_order: data.display_order,
-        })
-        .eq("id", id);
-
-      if (productError) throw productError;
-
-      // 2. Sync variants (clear and re-insert)
-      const { error: deleteError } = await supabase
-        .from("product_variants")
-        .delete()
-        .eq("product_id", id);
-
-      if (deleteError) throw deleteError;
-
-      if (data.variants?.length) {
-        const { error: insertError } = await supabase
-          .from("product_variants")
-          .insert(
-            data.variants.map((v, i) => ({
-              product_id:    id,
-              type:          v.type,
-              name:          v.name,
-              price_delta:   Math.round(v.price_delta * 100), // ₹ → paise
-              display_order: i,
-            }))
-          );
-        if (insertError) throw insertError;
-      }
+      await updateProductAction(id, {
+        name:          data.name,
+        slug:          data.slug,
+        description:   data.description,
+        base_price:    data.base_price,
+        has_nfc:       data.has_nfc,
+        rakhi_type:    data.rakhi_type,
+        images:        uploadedImages,
+        display_order: data.display_order,
+        variants:      data.variants,
+      });
 
       router.push("/admin/products");
       router.refresh();

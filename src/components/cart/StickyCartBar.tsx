@@ -13,7 +13,7 @@ export function StickyCartBar() {
   const total = items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 bg-white p-3 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] border-t border-black/5 animate-in slide-in-from-bottom-5">
+    <div className="fixed bottom-0 left-0 right-0 z-30 bg-white p-3 pb-safe shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] border-t border-black/5 animate-in slide-in-from-bottom-5">
       <div className="flex items-center justify-between rounded-xl bg-[var(--color-primary)] px-4 py-3 text-[var(--color-on-primary)] shadow-soft-lift">
         <div className="flex flex-col">
           <span className="text-xs opacity-80">{items.length} item{items.length > 1 ? 's' : ''}</span>

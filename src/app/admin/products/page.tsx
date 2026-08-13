@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit2, Eye, EyeOff, Trash2 } from "lucide-react";
+import { toggleProductActiveAction, deleteProductAction } from "./actions";
 
 function formatPrice(paise: number) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
@@ -29,21 +30,23 @@ export default function AdminProductsPage() {
   };
 
   const toggleActive = async (id: string, current: boolean) => {
-    const supabase = createClient();
-    await supabase.from("products").update({ is_active: !current }).eq("id", id);
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: !current } : p)));
+    try {
+      await toggleProductActiveAction(id, current);
+      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: !current } : p)));
+    } catch (err: any) {
+      alert(err.message || "Failed to toggle product status");
+    }
   };
 
   const deleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`Are you sure you want to permanently delete "${name}"? This action cannot be undone and will delete all associated variants.`)) {
       return;
     }
-    const supabase = createClient();
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) {
-      alert(`Failed to delete product: ${error.message}`);
-    } else {
+    try {
+      await deleteProductAction(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch (err: any) {
+      alert(err.message || "Failed to delete product");
     }
   };
 

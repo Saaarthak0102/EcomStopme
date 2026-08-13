@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Upload } from "lucide-react";
+import { createProductAction } from "../actions";
 
 const schema = z.object({
   name:          z.string().min(2),
@@ -62,40 +63,26 @@ export default function NewProductPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true); setError(null);
-    const supabase = createClient();
 
-    const { data: product, error: productError } = await supabase
-      .from("products")
-      .insert({
+    try {
+      await createProductAction({
         name:          data.name,
         slug:          data.slug,
         description:   data.description,
-        base_price:    Math.round(data.base_price * 100), // ₹ → paise
+        base_price:    data.base_price,
         has_nfc:       data.has_nfc,
         rakhi_type:    data.rakhi_type,
         images:        uploadedImages,
         display_order: data.display_order,
-        is_active:     true,
-      })
-      .select()
-      .single();
+        variants:      data.variants,
+      });
 
-    if (productError) { setError(productError.message); setLoading(false); return; }
-
-    if (data.variants?.length) {
-      await supabase.from("product_variants").insert(
-        data.variants.map((v, i) => ({
-          product_id:    product.id,
-          type:          v.type,
-          name:          v.name,
-          price_delta:   Math.round(v.price_delta * 100),
-          display_order: i,
-        }))
-      );
+      router.push("/admin/products");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Failed to create product");
+      setLoading(false);
     }
-
-    router.push("/admin/products");
-    router.refresh();
   };
 
   return (
