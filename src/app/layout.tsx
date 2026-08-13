@@ -30,11 +30,11 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans relative">
+      <head>
         {/* Meta Pixel Code */}
         <Script
           id="meta-pixel"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               !function(f,b,e,v,n,t,s)
@@ -50,6 +50,10 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* End Meta Pixel Code */}
+      </head>
+      <body className="min-h-full flex flex-col font-sans relative">
+        {/* Meta Pixel noscript fallback */}
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -60,7 +64,6 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-        {/* End Meta Pixel Code */}
         <ReferrerTracker />
         {children}
       </body>
